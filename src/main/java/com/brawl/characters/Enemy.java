@@ -2,8 +2,9 @@ package com.brawl.characters;
 
 import lombok.Getter;
 
-import java.io.PrintStream;
-
+/**
+ *
+ */
 public abstract class Enemy implements Fighter, SpecialAbility {
     @Getter
     protected String name;
@@ -35,6 +36,7 @@ public abstract class Enemy implements Fighter, SpecialAbility {
     public void useSpecialAbility() {
         this.isSpecialUsed = true;
         System.out.println(this.name + " utilise sa capacité spéciale : " + specialAbilityDescription);
+        // When no overriden, this special attack does nothing
         System.out.println("This appears to do nothing...");
     }
 
@@ -45,6 +47,7 @@ public abstract class Enemy implements Fighter, SpecialAbility {
 
     @Override
     public void attack(Fighter target) {
+        // Between 1 and damage
         int damage = Math.max(1, this.attackPoints - target.getDefensePoints());
         target.takeDamage(damage);
         System.out.println(this.name + " attaque " + target.getClass().getSimpleName() + " pour " + damage + " points de dégâts.");

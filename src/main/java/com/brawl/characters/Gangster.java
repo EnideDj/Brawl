@@ -2,7 +2,7 @@ package com.brawl.characters;
 
 public class Gangster extends Enemy {
 
-    private int rangeDamage;
+    private final int rangeDamage;
 
     public Gangster(String name, int healthPoints, int attackPoints, int defensePoints, int rangeDamage) {
         super(name, healthPoints, attackPoints, defensePoints, "Tir de précision");

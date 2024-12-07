@@ -38,7 +38,7 @@ public class Main {
         System.out.println("Héros choisi : " + hero.getName());
 
         Map map = MapRegistry.getRandomMap();
-        System.out.println("Carte choisie : " + map.getName());
+        System.out.println("Carte choisie : " + map.name());
 
         Game game = new Game(hero, map);
         game.start();

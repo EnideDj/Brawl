@@ -21,15 +21,15 @@ public class Game {
         this.random = new Random();
     }
 
-    public void start() {
-        int position = map.getStart();
+    public boolean start() {
+        int position = map.start();
 
-        while (position < map.getEnd() && hero.isAlive()) {
-            int moveDistance = random.nextInt(map.getLength()) + 1;
+        while (position < map.end() && hero.isAlive()) {
+            int moveDistance = random.nextInt(map.length()) + 1;
             position += moveDistance;
 
-            if (position > map.getEnd()) {
-                position = map.getEnd();
+            if (position > map.end()) {
+                position = map.end();
             }
 
             logger.log("Le héros avance de " + moveDistance + " pas. Position actuelle : " + position);
@@ -69,10 +69,7 @@ public class Game {
 
                 // Other enemies attack hero
                 attackHero(enemies.stream().filter(enemy -> !(enemy instanceof Gangster)).toList(), false);
-                if(!hero.isAlive()) {
-                    // If dead, go back to main loop
-                    continue;
-                }
+
 
 
             }
@@ -90,9 +87,10 @@ public class Game {
         System.out.println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////");
         if(hero.isAlive()) {
             logger.log("Bravo ! Vous avez abattu le glaive de la justice sur vos ennemis ! Vous avez gagné le jeu !");
-            return;
+            return true;
         }
         logger.log("OOPS ! Vous êtes morts !");
+        return false;
 
     }
 
@@ -122,40 +120,7 @@ public class Game {
         if(isFromGangsters) {
             logger.log(String.format("Attention ! Les gangsters tirent sur %s", hero.getName()));
         }
-        enemies.forEach(enemy -> {
-            enemy.attack(hero);
-        });
+        enemies.forEach(enemy -> enemy.attack(hero));
     }
 
 }
-
-/*
-            if (!enemy.isAlive()) {
-                //TODO : getName() on instance
-                System.out.println("L'ennemi " + enemy.getClass().getSimpleName() + " a été vaincu.");
-                break;
-            } else {
-                System.out.println("PV de l'ennemi après l'attaque du héros : " + enemy.getHealthPoints());
-            }
-
-            enemy.attack(hero);
-            if (!hero.isAlive()) {
-                System.out.println("Le héros a été vaincu par " + enemy.getClass().getSimpleName() + ".");
-                return;
-            } else {
-                System.out.println("PV du héros après l'attaque de l'ennemi : " + hero.getHealthPoints());
-            }
-        }
-
-        if (!hero.isAlive()) {
-            logger.log("Le héros est mort. Défaite.");
-            System.out.println("Vous avez perdu !");
-            return;
-        }
-
-        if (position >= map.getEnd() && hero.isAlive()) {
-            logger.log("Le héros atteint la fin de la carte. Victoire !");
-            System.out.println("Vous avez gagné !");
-            return;
-        }
-        */
