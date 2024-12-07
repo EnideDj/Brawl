@@ -1,41 +1,24 @@
 package com.brawl.game;
 
-import com.brawl.characters.Hero;
-import com.brawl.characters.Enemy;
-import com.brawl.characters.Brigand;
-import com.brawl.characters.Gangster;
-import com.brawl.characters.Catcheur;
+import com.brawl.characters.*;
+import com.brawl.utils.GameUtils;
 import com.brawl.utils.Logger;
-import com.brawl.characters.Fighter;
-import com.brawl.characters.SpecialAbility;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Game {
-    private Hero hero;
-    private Map map;
-    private Logger logger;
-    private Random random;
+    private final Hero hero;
+    private final Map map;
+    private final Logger logger;
+    private final Random random;
 
     public Game(Hero hero, Map carte) {
         this.hero = hero;
         this.map = carte;
         this.logger = new Logger("src/main/resources/logs/game.log");
         this.random = new Random();
-    }
-
-    private void displayFighterStats(Fighter fighter) {
-        System.out.println("Points de vie : " + fighter.getHealthPoints() + " - Points d'attaque : " + fighter.getAttackPoints() + " - Points de défense : " + fighter.getDefensePoints());
-
-        if (fighter instanceof Hero) {
-            System.out.println("Capacité spéciale : " + ((Hero) fighter).getSpecialAbilityDescription());
-        } else if (fighter instanceof SpecialAbility) {
-            System.out.println("Capacité spéciale : " + ((SpecialAbility) fighter).getSpecialAbilityDescription());
-        }
-
-        System.out.println();
     }
 
     public void start() {
@@ -50,73 +33,129 @@ public class Game {
             }
 
             logger.log("Le héros avance de " + moveDistance + " pas. Position actuelle : " + position);
-            System.out.println("Le héros avance de " + moveDistance + " pas. Position actuelle : " + position);
 
-            Enemy enemy = generateEnemy();
-            logger.log("Le héros rencontre un " + enemy.getClass().getSimpleName());
-            System.out.println("Le héros rencontre un " + enemy.getClass().getSimpleName());
+            ArrayList<Enemy> enemies = this.map.spawnEnemies(random);
 
-            System.out.println("Statistiques du héros :");
-            displayFighterStats(hero);
-            System.out.println("Statistiques de l'ennemi :");
-            displayFighterStats(enemy);
+            while (hero.isAlive() && !enemies.isEmpty()) {
 
-            if (random.nextBoolean()) {
-                hero.useSpecialAbility();
-            }
+                GameUtils.printHeroStatistics(hero);
+                GameUtils.printEnemiesStatistics(enemies);
 
-            if (random.nextBoolean()) {
-                enemy.useSpecialAbility();
-            }
 
-            while (enemy.isAlive() && hero.isAlive()) {
-                hero.attack(enemy);
-                if (!enemy.isAlive()) {
-                    System.out.println("L'ennemi " + enemy.getClass().getSimpleName() + " a été vaincu.");
-                    break;
-                } else {
-                    System.out.println("PV de l'ennemi après l'attaque du héros : " + enemy.getHealthPoints());
+                logger.log("==================================== COMBAT ====================================");
+
+                if (hero.isSpecialAbilityUsed() && random.nextBoolean()) {
+                    hero.useSpecialAbility();
                 }
 
-                enemy.attack(hero);
-                if (!hero.isAlive()) {
-                    System.out.println("Le héros a été vaincu par " + enemy.getClass().getSimpleName() + ".");
-                    return;
-                } else {
-                    System.out.println("PV du héros après l'attaque de l'ennemi : " + hero.getHealthPoints());
+                for (Enemy enemy : enemies) {
+                    if (random.nextBoolean()) {
+                        enemy.useSpecialAbility();
+                    }
                 }
+
+                // Gangsters attack hero
+                List<Enemy> gangsters = enemies.stream().filter(enemy -> enemy instanceof Gangster).toList();
+                if (!gangsters.isEmpty()) {
+                    attackHero(gangsters,true);
+                    if(!hero.isAlive()) {
+                        // If dead, go back to main loop
+                        continue;
+                    }
+                }
+
+                // Performs randomly between 1 and 5 attacks on the enemies
+                attackEnemies(enemies);
+
+                // Other enemies attack hero
+                attackHero(enemies.stream().filter(enemy -> !(enemy instanceof Gangster)).toList(), false);
+                if(!hero.isAlive()) {
+                    // If dead, go back to main loop
+                    continue;
+                }
+
+
+            }
+            if (hero.isAlive() && enemies.isEmpty()) {
+                logger.log(String.format("Bien joué ! %s a éliminé tous les ennemis ! Avancons à la case suivante.", hero.getName()));
+            } else {
+                logger.log("GAME OVER");
             }
 
-            if (!hero.isAlive()) {
-                logger.log("Le héros est mort. Défaite.");
-                System.out.println("Vous avez perdu !");
-                return;
-            }
+        } // hero is dead || game is finished
 
-            if (position >= map.getEnd() && hero.isAlive()) {
-                logger.log("Le héros atteint la fin de la carte. Victoire !");
-                System.out.println("Vous avez gagné !");
-                return;
+        System.out.println();
+        System.out.println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////");
+        System.out.println("///////////////////////////////////////////////FIN DU JEU//////////////////////////////////////////////////////////");
+        System.out.println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////");
+        if(hero.isAlive()) {
+            logger.log("Bravo ! Vous avez abattu le glaive de la justice sur vos ennemis ! Vous avez gagné le jeu !");
+            return;
+        }
+        logger.log("OOPS ! Vous êtes morts !");
+
+    }
+
+
+    private void attackEnemies(ArrayList<Enemy> enemies) {
+        // Hero attacks randomly from one to five times
+        int nbAttacks = random.nextInt(5) + 1;
+
+        logger.log(String.format("%s se lance et attaque %d fois ses ennemis.", hero.getName(), nbAttacks));
+
+        int i = 0;
+        // Attack enemies and stops if there's no one left
+        while (i < nbAttacks && !enemies.isEmpty()) {
+            // Attacks randomly one enemy
+            Enemy target = enemies.get(random.nextInt(enemies.size()));
+            hero.attack(target);
+            // Removing if dead
+            if (!target.isAlive()) {
+                enemies.remove(target);
             }
+            ++i;
         }
+
     }
-    private Enemy generateEnemy() {
-        int enemyType = random.nextInt(3);
-        Enemy enemy;
-        switch (enemyType) {
-            case 0:
-                enemy = new Brigand(30, 10, 5);
-                break;
-            case 1:
-                int rangeDamage = random.nextInt(10) + 1;
-                enemy = new Gangster(40, 12, 4, rangeDamage);
-                break;
-            case 2:
-                enemy = new Catcheur(50, 15, 7);
-                break;
-            default:
-                throw new IllegalStateException("Type d'ennemi inconnu");
+
+    private void attackHero(List<Enemy> enemies, boolean isFromGangsters) {
+        if(isFromGangsters) {
+            logger.log(String.format("Attention ! Les gangsters tirent sur %s", hero.getName()));
         }
-        return enemy;
+        enemies.forEach(enemy -> {
+            enemy.attack(hero);
+        });
     }
+
 }
+
+/*
+            if (!enemy.isAlive()) {
+                //TODO : getName() on instance
+                System.out.println("L'ennemi " + enemy.getClass().getSimpleName() + " a été vaincu.");
+                break;
+            } else {
+                System.out.println("PV de l'ennemi après l'attaque du héros : " + enemy.getHealthPoints());
+            }
+
+            enemy.attack(hero);
+            if (!hero.isAlive()) {
+                System.out.println("Le héros a été vaincu par " + enemy.getClass().getSimpleName() + ".");
+                return;
+            } else {
+                System.out.println("PV du héros après l'attaque de l'ennemi : " + hero.getHealthPoints());
+            }
+        }
+
+        if (!hero.isAlive()) {
+            logger.log("Le héros est mort. Défaite.");
+            System.out.println("Vous avez perdu !");
+            return;
+        }
+
+        if (position >= map.getEnd() && hero.isAlive()) {
+            logger.log("Le héros atteint la fin de la carte. Victoire !");
+            System.out.println("Vous avez gagné !");
+            return;
+        }
+        */
