@@ -19,6 +19,7 @@ public class Hero implements Fighter, SpecialAbility {
     private final int maxHealth;
     private final int attackPoints;
     private final int defensePoints;
+    @Getter
     private final Special specialAbility;
     private int healthPoints;
 
@@ -27,8 +28,6 @@ public class Hero implements Fighter, SpecialAbility {
 
     @Getter
     private boolean specialAbilityUsed;
-
-    private int nbRoundsSpecialAbility;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////// CONSTRUCTOR        ///////////////////////////////////////////////
@@ -50,6 +49,11 @@ public class Hero implements Fighter, SpecialAbility {
 
     @Override
     public void takeDamage(int damage) {
+        if(!isSpecialAbilityUsed() && specialAbility == Special.BLACK_WIDOW_SPECIAL) {
+            useSpecialAbility();
+            // Does not take any damage for this turn
+            return;
+        }
         this.healthPoints = Math.max(Math.min(healthPoints - damage, maxHealth), 0);
     }
 
@@ -61,10 +65,10 @@ public class Hero implements Fighter, SpecialAbility {
     public void attack(Fighter fighter) {
         int damage = attackPoints;
 
-        if ("Iron Man".equals(this.name) && !specialAbilityUsed) {
-            useSpecialAbility();
+        // Enables doubling attack for one turn
+        if ("Thor".equals(this.name) && !specialAbilityUsed) {
             damage *= 2;
-            specialAbilityUsed = true;
+            useSpecialAbility();
         }
 
         damage = Math.max(0, damage - fighter.getDefensePoints());
@@ -73,6 +77,12 @@ public class Hero implements Fighter, SpecialAbility {
 
     }
 
+    public void useSpecialAbility(ArrayList<Enemy> fighters) {
+        if(this.specialAbility == Special.IRON_MAN_SPECIAL || this.specialAbility == Special.CAPTAIN_AMERICA_SPECIAL) {
+            useSpecialAbility();
+            fighters.clear();
+        }
+    }
 
 
     @Override
@@ -100,10 +110,6 @@ public class Hero implements Fighter, SpecialAbility {
             System.out.println(this.name + " utilise sa capacité spéciale : " + specialAbility.getDescription());
             specialAbilityUsed = true;
         }
-    }
-
-    private void specialAbilityKillAll(ArrayList<Enemy> enemies) {
-        enemies.clear();
     }
 
     @Override

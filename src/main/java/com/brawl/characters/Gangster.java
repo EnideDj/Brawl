@@ -9,7 +9,6 @@ public class Gangster extends Enemy {
         this.rangeDamage = rangeDamage;
     }
 
-
     @Override
     public int getHealthPoints() {
         return this.healthPoints;
@@ -31,4 +30,5 @@ public class Gangster extends Enemy {
         opponent.takeDamage(damage);
         System.out.println(getName() + " attaque " + opponent.getName() + " et inflige " + damage + " points de dégâts.");
     }
+
 }

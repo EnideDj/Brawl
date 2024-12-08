@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Random;
 
 public class Game {
+
+    public static final String FILE_PATH = "src/main/resources/logs/game.log";
     private final Hero hero;
     private final Map map;
     private final Logger logger;
@@ -17,7 +19,7 @@ public class Game {
     public Game(Hero hero, Map carte) {
         this.hero = hero;
         this.map = carte;
-        this.logger = new Logger("src/main/resources/logs/game.log");
+        this.logger = new Logger(FILE_PATH);
         this.random = new Random();
     }
 
@@ -38,14 +40,21 @@ public class Game {
 
             while (hero.isAlive() && !enemies.isEmpty()) {
 
+                // This flag indicates whether the hero used its special capacity during the round
+                boolean isHeroSpecialUsed = false;
                 GameUtils.printHeroStatistics(hero);
                 GameUtils.printEnemiesStatistics(enemies);
 
 
                 logger.log("==================================== COMBAT ====================================");
 
-                if (hero.isSpecialAbilityUsed() && random.nextBoolean()) {
-                    hero.useSpecialAbility();
+                if (!hero.isSpecialAbilityUsed() && random.nextBoolean()) {
+                    if (hero.getSpecialAbility() == Special.IRON_MAN_SPECIAL || hero.getSpecialAbility() == Special.CAPTAIN_AMERICA_SPECIAL) {
+                        hero.useSpecialAbility(enemies);
+                    } else {
+                        hero.useSpecialAbility();
+                    }
+                    isHeroSpecialUsed = true;
                 }
 
                 for (Enemy enemy : enemies) {
@@ -54,23 +63,26 @@ public class Game {
                     }
                 }
 
+
                 // Gangsters attack hero
                 List<Enemy> gangsters = enemies.stream().filter(enemy -> enemy instanceof Gangster).toList();
                 if (!gangsters.isEmpty()) {
-                    attackHero(gangsters,true);
-                    if(!hero.isAlive()) {
+                    attackHero(gangsters, true, isHeroSpecialUsed);
+                    if (!hero.isAlive()) {
                         // If dead, go back to main loop
                         continue;
                     }
                 }
 
-                // Performs randomly between 1 and 5 attacks on the enemies
-                attackEnemies(enemies);
+
+                // If the hero used its special ability for this round, it won't attack afterward
+                if (!isHeroSpecialUsed) {
+                    // Performs randomly between 1 and 5 attacks on the enemies
+                    attackEnemies(enemies);
+                }
 
                 // Other enemies attack hero
-                attackHero(enemies.stream().filter(enemy -> !(enemy instanceof Gangster)).toList(), false);
-
-
+                attackHero(enemies.stream().filter(enemy -> !(enemy instanceof Gangster)).toList(), false, isHeroSpecialUsed);
 
             }
             if (hero.isAlive() && enemies.isEmpty()) {
@@ -85,7 +97,7 @@ public class Game {
         System.out.println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////");
         System.out.println("///////////////////////////////////////////////FIN DU JEU//////////////////////////////////////////////////////////");
         System.out.println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////");
-        if(hero.isAlive()) {
+        if (hero.isAlive()) {
             logger.log("Bravo ! Vous avez abattu le glaive de la justice sur vos ennemis ! Vous avez gagné le jeu !");
             return true;
         }
@@ -95,7 +107,7 @@ public class Game {
     }
 
 
-    private void attackEnemies(ArrayList<Enemy> enemies) {
+    public void attackEnemies(ArrayList<Enemy> enemies) {
         // Hero attacks randomly from one to five times
         int nbAttacks = random.nextInt(5) + 1;
 
@@ -116,8 +128,13 @@ public class Game {
 
     }
 
-    private void attackHero(List<Enemy> enemies, boolean isFromGangsters) {
-        if(isFromGangsters) {
+    public void attackHero(List<Enemy> enemies, boolean isFromGangsters, boolean isHeroSpecialUsed) {
+
+        if (isHeroSpecialUsed && hero.getSpecialAbility() == Special.SPIDER_MAN_SPECIAL) {
+            logger.log("Les ennemis sont paralysés pour ce tour...");
+            return;
+        }
+        if (isFromGangsters) {
             logger.log(String.format("Attention ! Les gangsters tirent sur %s", hero.getName()));
         }
         enemies.forEach(enemy -> enemy.attack(hero));
