@@ -2,10 +2,10 @@ package com.brawl.characters;
 
 public class Gangster extends Enemy {
 
-    private int rangeDamage;
+    private final int rangeDamage;
 
-    public Gangster(int healthPoints, int attackPoints, int defensePoints, int rangeDamage) {
-        super("Gangster", healthPoints, attackPoints, defensePoints, "Tir de précision");
+    public Gangster(String name, int healthPoints, int attackPoints, int defensePoints, int rangeDamage) {
+        super(name, healthPoints, attackPoints, defensePoints, "Tir de précision");
         this.rangeDamage = rangeDamage;
     }
 
@@ -27,8 +27,8 @@ public class Gangster extends Enemy {
 
     @Override
     public void attack(Fighter opponent) {
-        int damage = Math.max(0, rangeDamage - opponent.getDefensePoints());
+        int damage = Math.max(0, (attackPoints + rangeDamage) - opponent.getDefensePoints());
         opponent.takeDamage(damage);
-        System.out.println("Le Gangster attaque " + opponent.getClass().getSimpleName() + " et inflige " + damage + " points de dégâts.");
+        System.out.println(getName() + " attaque " + opponent.getName() + " et inflige " + damage + " points de dégâts.");
     }
 }

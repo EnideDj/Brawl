@@ -2,8 +2,8 @@ package com.brawl.characters;
 
 public class Catcheur extends Enemy {
 
-    public Catcheur(int healthPoints, int attackPoints, int defensePoints) {
-        super("Catcheur", healthPoints, attackPoints, defensePoints, "Clé de bras");
+    public Catcheur(String name, int healthPoints, int attackPoints, int defensePoints) {
+        super(name, healthPoints, attackPoints, defensePoints, "Clé de bras");
     }
 
     @Override
@@ -21,10 +21,4 @@ public class Catcheur extends Enemy {
         return this.defensePoints;
     }
 
-    @Override
-    public void attack(Fighter opponent) {
-        int damage = Math.max(0, this.attackPoints - opponent.getDefensePoints());
-        opponent.takeDamage(damage);
-        System.out.println("Le Catcheur attaque " + opponent.getClass().getSimpleName() + " et inflige " + damage + " points de dégâts.");
-    }
 }

@@ -20,7 +20,4 @@ public class MapRegistry {
     }
 
 
-    public static List<Map> getAllMaps() {
-        return new ArrayList<>(maps);
-    }
 }
