@@ -36,8 +36,6 @@ public abstract class Enemy implements Fighter, SpecialAbility {
     public void useSpecialAbility() {
         this.isSpecialUsed = true;
         System.out.println(this.name + " utilise sa capacité spéciale : " + specialAbilityDescription);
-        // When no overriden, this special attack does nothing
-        System.out.println("This appears to do nothing...");
     }
 
     @Override
