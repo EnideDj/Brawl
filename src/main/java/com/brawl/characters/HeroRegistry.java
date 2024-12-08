@@ -11,9 +11,9 @@ public class HeroRegistry {
     static {
         heroes.add(new Hero("Iron Man", 150, 30, 20, Special.IRON_MAN_SPECIAL));
         heroes.add(new Hero("Captain America", 180, 25, 30, Special.CAPTAIN_AMERICA_SPECIAL));
-        heroes.add(new Hero("Spider-Man", 140, 35, 20, Special.SPIDER_MAN_SPECIAL));
+        heroes.add(new Hero("Spider-Man", 160, 35, 20, Special.SPIDER_MAN_SPECIAL));
         heroes.add(new Hero("Thor", 200, 35, 25, Special.THOR_SPECIAL));
-        heroes.add(new Hero("Black Widow", 130, 25, 20, Special.BLACK_WIDOW_SPECIAL));
+        heroes.add(new Hero("Black Widow", 150, 30, 20, Special.BLACK_WIDOW_SPECIAL));
     }
 
     public static Hero getRandomHero() {
